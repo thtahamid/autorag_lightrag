@@ -1,0 +1,59 @@
+name: Unit Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      - name: Upgrade pip
+        run: |
+          python3 -m pip install --upgrade pip
+      - name: Update apt-get
+        run: |
+          sudo apt-get update
+      - name: Install gcc
+        run: |
+          sudo apt-get install gcc
+      - name: Install poppler-utils
+        run: |
+          sudo apt-get install poppler-utils
+      - name: Install tesseract
+        run: |
+          sudo apt-get install tesseract-ocr
+      - name: Install AutoRAG
+        run: |
+          pip install -e '.[ko,dev,parse,ja]'
+      - name: Install dependencies
+        run: |
+          pip install -r tests/requirements.txt
+      - name: Upgrade pyOpenSSL
+        run: |
+          pip install --upgrade pyOpenSSL
+      - name: Install NLTK and download model
+        run: |
+          pip install nltk
+          python3 -c "import nltk; nltk.download('punkt_tab')"
+          python3 -c "import nltk; nltk.download('averaged_perceptron_tagger_eng')"
+      - name: delete tests package
+        run: python3 tests/delete_tests.py
+      - name: Run tests
+        run: |
+          python3 -m pytest -o log_cli=true --log-cli-level=INFO -n auto tests/

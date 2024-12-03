@@ -1,0 +1,4 @@
+# Chunking configuration
+chunk_size: 512
+chunk_overlap: 50
+chunking_method: "sentence" 
